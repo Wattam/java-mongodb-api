@@ -1,4 +1,4 @@
-package com.wattam.errors;
+package com.wattam.controller.exception;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.wattam.models;
+package com.wattam.model;
 
 import java.math.BigDecimal;
 
@@ -18,5 +18,4 @@ public class Shoe {
     private String colour;
     private String material;
     private BigDecimal price;
-
 }

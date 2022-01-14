@@ -1,4 +1,4 @@
-package com.wattam.errors;
+package com.wattam.controller.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;

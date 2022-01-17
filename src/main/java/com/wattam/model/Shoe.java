@@ -14,8 +14,6 @@ public class Shoe {
     @Id
     private String id;
     private String name;
-    private String style;
-    private String colour;
-    private String material;
+    private String color;
     private BigDecimal price;
 }

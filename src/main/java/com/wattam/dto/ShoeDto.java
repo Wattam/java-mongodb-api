@@ -3,6 +3,8 @@ package com.wattam.dto;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import javax.validation.constraints.NotBlank;
+
 import com.opengamma.strata.collect.ArgChecker;
 import com.wattam.model.Shoe;
 
@@ -14,10 +16,10 @@ import lombok.Data;
 public class ShoeDto implements Serializable {
 
     private String id;
+    @NotBlank
     private String name;
-    private String style;
-    private String colour;
-    private String material;
+    @NotBlank
+    private String color;
     private BigDecimal price;
 
     public Shoe toEntity() {

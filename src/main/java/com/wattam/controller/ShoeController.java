@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import com.wattam.controller.exception.RecordNotFoundException;
 import com.wattam.dto.ShoeDto;
 import com.wattam.service.ShoeService;
@@ -48,14 +50,14 @@ public class ShoeController {
 
     @PostMapping("/post")
     @ResponseStatus(HttpStatus.CREATED)
-    public ShoeDto post(@RequestBody ShoeDto shoeDto) {
+    public ShoeDto post(@Valid @RequestBody ShoeDto shoeDto) {
 
         return shoeService.addShoe(shoeDto);
     }
 
     @PutMapping("/put")
     @ResponseStatus(HttpStatus.OK)
-    public ShoeDto put(@RequestBody ShoeDto shoeDto) {
+    public ShoeDto put(@Valid @RequestBody ShoeDto shoeDto) {
 
         if (shoeService.getShoe(shoeDto.getId()).isEmpty()) {
             throw new RecordNotFoundException("no shoe with the ID: " + shoeDto.getId());

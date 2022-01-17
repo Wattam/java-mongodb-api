@@ -18,6 +18,10 @@ public class ShoeServiceImpl implements ShoeService {
     @Autowired
     private ShoeRepository shoeRepository;
 
+    public ShoeServiceImpl(ShoeRepository shoeRepository) {
+        this.shoeRepository = shoeRepository;
+    }
+
     @Override
     public List<ShoeDto> getAllShoes() {
 

@@ -13,13 +13,11 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // EXCEPTION HANDLERS FUNCTIONS
-
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<Object> handleAllExceptions(Exception ex) {
 
         String[] details = ex.getLocalizedMessage().split("\n");
-        ErrorResponse error = new ErrorResponse("server Error", details);
+        ErrorResponse error = new ErrorResponse("server error", details);
 
         return new ResponseEntity<Object>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -28,7 +26,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<Object> handleNotFoundException(RecordNotFoundException ex) {
 
         String[] details = ex.getLocalizedMessage().split("\n");
-        ErrorResponse error = new ErrorResponse("record Not Found", details);
+        ErrorResponse error = new ErrorResponse("record not found", details);
 
         return new ResponseEntity<Object>(error, HttpStatus.NOT_FOUND);
     }
@@ -41,8 +39,6 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<Object>(error, HttpStatus.BAD_REQUEST);
     }
-
-    // OVERRIDE FUNCTIONS
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,

@@ -1,7 +1,17 @@
 package com.wattam.controller;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -10,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.google.common.collect.ImmutableList;
+import com.wattam.controller.exception.RecordNotFoundException;
 import com.wattam.dto.ShoeDto;
 import com.wattam.service.ShoeService;
 
@@ -22,15 +33,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(ShoeController.class)
@@ -56,9 +58,8 @@ public class ShoeControllerTest {
         Mockito.reset(shoeService);
     }
 
-    // getAll()
     @Test
-    void shouldReturnAllShoes() throws Exception {
+    void shouldIndexShoes() throws Exception {
 
         ShoeDto shoe1 = createShoeDto("Name1", "Color1", 1);
         ShoeDto shoe2 = createShoeDto("Name2", "Color2", 2);
@@ -68,9 +69,9 @@ public class ShoeControllerTest {
                 .add(shoe2)
                 .build();
 
-        when(shoeService.getAllShoes()).thenReturn(shoes);
+        when(shoeService.index()).thenReturn(shoes);
 
-        mockMvc.perform(get("/shoes/get").accept(APPLICATION_JSON))
+        mockMvc.perform(get("/shoes").accept(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("length()").value(shoes.size()))
                 .andExpect(jsonPath("$[0].name", is("Name1")))
@@ -82,22 +83,24 @@ public class ShoeControllerTest {
     }
 
     @Test
-    void shouldNotReturnAllShoes() throws Exception {
+    void shouldNotIndexShoes() throws Exception {
 
-        when(shoeService.getAllShoes()).thenReturn(Collections.emptyList());
+        when(shoeService.index()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/shoes/get").accept(APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/shoes").accept(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof RecordNotFoundException))
+                .andExpect(result -> assertEquals("no shoes found",
+                        result.getResolvedException().getMessage()));
     }
 
-    // get()
     @Test
-    void shouldReturnShoe() throws Exception {
+    void shouldShowShoe() throws Exception {
 
         ShoeDto shoeDto = createShoeDto("Name", "Color", 1);
         shoeDto.setId("1");
 
-        when(shoeService.getShoe("1")).thenReturn(Optional.of(shoeDto));
+        when(shoeService.show("1")).thenReturn(Optional.of(shoeDto));
 
         mockMvc.perform(get("/shoes/1").accept(APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -108,34 +111,24 @@ public class ShoeControllerTest {
     }
 
     @Test
-    void shouldNotReturnShoe() throws Exception {
+    void shouldNotShowShoe() throws Exception {
 
-        when(shoeService.getShoe("1")).thenReturn(Optional.empty());
+        when(shoeService.show("1")).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/shoes/1").accept(APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof RecordNotFoundException))
+                .andExpect(result -> assertEquals("no shoe with the ID: 1",
+                        result.getResolvedException().getMessage()));
     }
 
     @Test
-    void shouldPostShoe() throws Exception {
+    void shouldStoreShoe() throws Exception {
 
         String json = "{\"name\": \"Name\",\"color\": \"Color\",\"price\": 1}";
 
-        ShoeDto shoe = new ShoeDto();
-        shoe.setName("Name");
-        shoe.setColor("Color");
-        shoe.setPrice(BigDecimal.valueOf(1).setScale(2, RoundingMode.CEILING));
-
-        ShoeDto shoePosted = new ShoeDto();
-        shoePosted.setName("Name");
-        shoePosted.setColor("Color");
-        shoePosted.setPrice(BigDecimal.valueOf(1).setScale(2, RoundingMode.CEILING));
-        shoePosted.setId("1");
-
-        when(shoeService.addShoe(shoe)).thenReturn(shoePosted);
-
         mockMvc.perform(
-                post("/shoes/post")
+                post("/shoes")
                         .accept(APPLICATION_JSON)
                         .contentType(APPLICATION_JSON)
                         .content(json))
@@ -143,21 +136,17 @@ public class ShoeControllerTest {
     }
 
     @Test
-    void testPut() throws Exception {
+    void shouldUpdateShoe() throws Exception {
 
-        String json = "{\"id\": \"1\",\"name\": \"Name\",\"color\": \"Color\",\"price\": 1}";
+        String json = "{\"name\": \"Name\",\"color\": \"Color\",\"price\": 1}";
 
         ShoeDto shoe = new ShoeDto();
-        shoe.setId("1");
-        shoe.setName("Name");
-        shoe.setColor("Color");
-        shoe.setPrice(BigDecimal.valueOf(1).setScale(2, RoundingMode.CEILING));
 
-        when(shoeService.addShoe(shoe)).thenReturn(shoe);
-        when(shoeService.getShoe(shoe.getId())).thenReturn(Optional.of(shoe));
+        when(shoeService.show("1")).thenReturn(Optional.of(shoe));
+        when(shoeService.update(shoe, "1")).thenReturn(shoe);
 
         mockMvc.perform(
-                put("/shoes/put")
+                put("/shoes/1")
                         .accept(APPLICATION_JSON)
                         .contentType(APPLICATION_JSON)
                         .content(json))
@@ -165,17 +154,35 @@ public class ShoeControllerTest {
     }
 
     @Test
-    void testDelete() throws Exception {
+    void shouldNotPutShoe() throws Exception {
+
+        String json = "{\"name\": \"Name\",\"color\": \"Color\",\"price\": 1}";
+
+        mockMvc.perform(put("/shoes/1").accept(APPLICATION_JSON).contentType(APPLICATION_JSON).content(json))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof RecordNotFoundException))
+                .andExpect(result -> assertEquals("no shoe with the ID: 1",
+                        result.getResolvedException().getMessage()));
+    }
+
+    @Test
+    void shouldDeleteShoe() throws Exception {
 
         ShoeDto shoe = new ShoeDto();
-        shoe.setId("1");
-        shoe.setName("Name");
-        shoe.setColor("Color");
-        shoe.setPrice(BigDecimal.valueOf(1).setScale(2, RoundingMode.CEILING));
 
-        when(shoeService.getShoe(shoe.getId())).thenReturn(Optional.of(shoe));
+        when(shoeService.show("1")).thenReturn(Optional.of(shoe));
 
         mockMvc.perform(delete("/shoes/1").accept(APPLICATION_JSON))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldNotDeleteShoe() throws Exception {
+
+        mockMvc.perform(delete("/shoes/1").accept(APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof RecordNotFoundException))
+                .andExpect(result -> assertEquals("no shoe with the ID: 1",
+                        result.getResolvedException().getMessage()));
     }
 }

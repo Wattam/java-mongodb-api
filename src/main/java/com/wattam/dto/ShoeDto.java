@@ -16,10 +16,13 @@ import lombok.Data;
 public class ShoeDto implements Serializable {
 
     private String id;
+
     @NotBlank
     private String name;
+
     @NotBlank
     private String color;
+
     private BigDecimal price;
 
     public Shoe toEntity() {

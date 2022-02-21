@@ -18,20 +18,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@DataMongoTest(properties = { "spring.mongodb.embedded.version=3.2.8" })
+@DataMongoTest(properties = { "spring.mongodb.embedded.version=3.4.1" })
 @ExtendWith(SpringExtension.class)
 public class ShoeServiceImplTest {
+
+    private ShoeService shoeService;
 
     @Autowired
     private ShoeRepository shoeRepository;
 
-    private ShoeService shoeService;
-
     @BeforeEach
-    void beforeEach() {
-
+    public void setUp() {
         shoeService = new ShoeServiceImpl(shoeRepository);
     }
 
@@ -45,14 +45,13 @@ public class ShoeServiceImplTest {
         return shoe;
     }
 
-    // getAllShoes()
     @Test
-    void shouldReturnAllShoes() {
+    void shouldIndexShoes() {
 
         shoeRepository.save(createShoe("1", "Name1", "Color1", 1));
         shoeRepository.save(createShoe("2", "Name2", "Color2", 2));
 
-        List<ShoeDto> shoes = shoeService.getAllShoes();
+        List<ShoeDto> shoes = shoeService.index();
 
         assertEquals(2, shoes.size());
 
@@ -68,20 +67,19 @@ public class ShoeServiceImplTest {
     }
 
     @Test
-    void shouldNotReturnAllShoes() {
+    void shouldNotIndexShoes() {
 
-        List<ShoeDto> shoes = shoeService.getAllShoes();
+        List<ShoeDto> shoes = shoeService.index();
 
         assertEquals(0, shoes.size());
     }
 
-    // getShoe()
     @Test
     void shouldReturnShoe() {
 
         Shoe expected = shoeRepository.save(createShoe("1", "Name", "Color", 1.11));
 
-        Shoe actual = shoeService.getShoe("1").get().toEntity();
+        Shoe actual = shoeService.show("1").get().toEntity();
 
         assertEquals(expected, actual);
         assertEquals("1", actual.getId());
@@ -93,44 +91,61 @@ public class ShoeServiceImplTest {
     @Test
     void shouldNotReturnShoe() {
 
-        ShoeDto actual = shoeService.getShoe("1").orElse(actual = null);
-
-        assertFalse(shoeService.getShoe("1").isPresent());
-        assertEquals(null, actual);
+        assertFalse(shoeService.show("1").isPresent());
     }
 
-    // addShoe()
     @Test
-    void shouldAddShoe() {
+    @DirtiesContext
+    void shouldStoreShoe() {
 
         ShoeDto expected = new ShoeDto();
         expected.setName("Name");
         expected.setColor("Color");
-        expected.setPrice(BigDecimal.valueOf(1.11));
+        expected.setPrice(BigDecimal.valueOf(1).setScale(2, RoundingMode.CEILING));
 
-        ShoeDto addedShoe = shoeService.addShoe(expected);
+        ShoeDto addedShoe = shoeService.store(expected);
         assertNotNull(addedShoe);
 
         ShoeDto actual = shoeRepository.findById(addedShoe.getId()).map(ShoeDto::of).get();
 
         assertEquals("Name", actual.getName());
         assertEquals("Color", actual.getColor());
-        assertEquals(BigDecimal.valueOf(1.11).setScale(2, RoundingMode.CEILING), actual.getPrice());
+        assertEquals(BigDecimal.valueOf(1).setScale(2, RoundingMode.CEILING), actual.getPrice());
 
         shoeRepository.deleteById(addedShoe.getId());
     }
 
-    // deleteShoe()
+    @Test
+    @DirtiesContext
+    void shouldUpdateShoe() {
+
+        Shoe shoe = new Shoe();
+
+        shoe = shoeRepository.save(shoe);
+
+        ShoeDto expected = new ShoeDto();
+        expected.setName("Name");
+        expected.setColor("Color");
+        expected.setPrice(BigDecimal.valueOf(1).setScale(2, RoundingMode.CEILING));
+
+        ShoeDto updatedShoe = shoeService.update(expected, shoe.getId());
+        assertNotNull(updatedShoe);
+
+        ShoeDto actual = shoeRepository.findById(updatedShoe.getId()).map(ShoeDto::of).get();
+
+        assertEquals("Name", actual.getName());
+        assertEquals("Color", actual.getColor());
+        assertEquals(BigDecimal.valueOf(1).setScale(2, RoundingMode.CEILING), actual.getPrice());
+    }
+
     @Test
     void shouldDeleteShoe() {
 
         shoeRepository.save(createShoe("1", "Name", "Color", 1.11));
-        assertNotNull(shoeService.getShoe("1").get());
+        assertNotNull(shoeService.show("1").get());
 
-        shoeService.deleteShoe("1");
+        shoeService.delete("1");
 
-        ShoeDto actual = shoeService.getShoe("1").orElse(actual = null);
-
-        assertEquals(null, actual);
+        assertFalse(shoeService.show("1").isPresent());
     }
 }

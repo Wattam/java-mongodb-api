@@ -1,15 +1,5 @@
 package com.wattam.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.util.List;
 
 import javax.validation.Valid;
@@ -18,8 +8,17 @@ import com.wattam.controller.exception.RecordNotFoundException;
 import com.wattam.dto.ShoeDto;
 import com.wattam.service.ShoeService;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/shoes")
@@ -28,11 +27,11 @@ public class ShoeController {
     @Autowired
     private ShoeService shoeService;
 
-    @GetMapping("/get")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ShoeDto> getAll() {
+    public List<ShoeDto> index() {
 
-        List<ShoeDto> shoes = shoeService.getAllShoes();
+        List<ShoeDto> shoes = shoeService.index();
         if (shoes == null || shoes.isEmpty()) {
             throw new RecordNotFoundException("no shoes found");
         }
@@ -41,38 +40,37 @@ public class ShoeController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ShoeDto get(@PathVariable String id) {
+    public ShoeDto show(@PathVariable String id) {
 
         return shoeService
-                .getShoe(id)
+                .show(id)
                 .orElseThrow(() -> new RecordNotFoundException("no shoe with the ID: " + id));
     }
 
-    @PostMapping("/post")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ShoeDto post(@Valid @RequestBody ShoeDto shoeDto) {
+    public ShoeDto store(@Valid @RequestBody ShoeDto shoeDto) {
 
-        return shoeService.addShoe(shoeDto);
+        return shoeService.store(shoeDto);
     }
 
-    @PutMapping("/put")
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ShoeDto put(@Valid @RequestBody ShoeDto shoeDto) {
+    public ShoeDto update(@Valid @RequestBody ShoeDto shoeDto, @PathVariable String id) {
 
-        if (shoeService.getShoe(shoeDto.getId()).isEmpty()) {
-            throw new RecordNotFoundException("no shoe with the ID: " + shoeDto.getId());
+        if (shoeService.show(id).isEmpty()) {
+            throw new RecordNotFoundException("no shoe with the ID: " + id);
         }
-        return shoeService.addShoe(shoeDto);
+        return shoeService.update(shoeDto, id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String id) {
 
-        if (shoeService.getShoe(id).isEmpty()) {
+        if (shoeService.show(id).isEmpty()) {
             throw new RecordNotFoundException("no shoe with the ID: " + id);
         }
-        shoeService.deleteShoe(id);
+        shoeService.delete(id);
     }
-
 }

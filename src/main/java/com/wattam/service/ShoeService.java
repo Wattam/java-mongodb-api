@@ -7,12 +7,13 @@ import com.wattam.dto.ShoeDto;
 
 public interface ShoeService {
 
-    public List<ShoeDto> getAllShoes();
+    public List<ShoeDto> index();
 
-    public Optional<ShoeDto> getShoe(String id);
+    public Optional<ShoeDto> show(String id);
 
-    public ShoeDto addShoe(ShoeDto shoeDto);
+    public ShoeDto store(ShoeDto shoeDto);
 
-    public void deleteShoe(String id);
+    public ShoeDto update(ShoeDto shoeDto, String id);
 
+    public void delete(String id);
 }

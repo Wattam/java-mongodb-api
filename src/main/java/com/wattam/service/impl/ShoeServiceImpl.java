@@ -16,14 +16,14 @@ import org.springframework.stereotype.Service;
 public class ShoeServiceImpl implements ShoeService {
 
     @Autowired
-    private ShoeRepository shoeRepository;
+    public ShoeRepository shoeRepository;
 
     public ShoeServiceImpl(ShoeRepository shoeRepository) {
         this.shoeRepository = shoeRepository;
     }
 
     @Override
-    public List<ShoeDto> getAllShoes() {
+    public List<ShoeDto> index() {
 
         return shoeRepository
                 .findAll()
@@ -33,22 +33,29 @@ public class ShoeServiceImpl implements ShoeService {
     }
 
     @Override
-    public Optional<ShoeDto> getShoe(String id) {
+    public Optional<ShoeDto> show(String id) {
 
         return shoeRepository.findById(id).map(ShoeDto::of);
     }
 
     @Override
-    public ShoeDto addShoe(ShoeDto shoeDto) {
+    public ShoeDto store(ShoeDto shoeDto) {
 
         Shoe postedShoe = shoeRepository.save(shoeDto.toEntity());
         return ShoeDto.of(postedShoe);
     }
 
     @Override
-    public void deleteShoe(String id) {
+    public ShoeDto update(ShoeDto shoeDto, String id) {
+
+        shoeDto.setId(id);
+        Shoe postedShoe = shoeRepository.save(shoeDto.toEntity());
+        return ShoeDto.of(postedShoe);
+    }
+
+    @Override
+    public void delete(String id) {
 
         shoeRepository.deleteById(id);
     }
-
 }

@@ -56,22 +56,22 @@ java -jar target/java-mongodb-api-1.0.jar
 └───src
 	├───main
 	│	└───java
-	│		│	└───com
-	│		│		└───wattam
-	│		│			├───controller
-	│		│			│	└───exception
-	│		│			├───dto
-	│		│			├───model
-	│		│			├───repository
-	│		│			└───service
-	│		│				└───impl
+	│		├───com
+	│		│	└───wattam
+	│		│		├───controller
+	│		│		│	└───exception
+	│		│		├───dto
+	│		│		├───model
+	│		│		├───repository
+	│		│		└───service
+	│		│			└───impl
 	│		└───resources
 	└───test
 		└───java
-			│	└───com
-			│		└───wattam
-			│			├───controller
-			│			└───service
+			├───com
+			│	└───wattam
+			│		├───controller
+			│		└───service
 			└───resources
 ```	
 

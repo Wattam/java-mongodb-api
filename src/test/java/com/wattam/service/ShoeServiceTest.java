@@ -1,4 +1,4 @@
-package com.wattam.service.impl;
+package com.wattam.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -11,7 +11,7 @@ import java.util.List;
 import com.wattam.dto.ShoeDto;
 import com.wattam.model.Shoe;
 import com.wattam.repository.ShoeRepository;
-import com.wattam.service.ShoeService;
+import com.wattam.service.impl.ShoeServiceImpl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @DataMongoTest(properties = { "spring.mongodb.embedded.version=3.4.1" })
 @ExtendWith(SpringExtension.class)
-public class ShoeServiceImplTest {
+public class ShoeServiceTest {
 
     private ShoeService shoeService;
 
